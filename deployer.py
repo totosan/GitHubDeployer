@@ -20,12 +20,10 @@ if __name__=="__main__":
     R = 128
     G = 128
     B = 128
+    lcd.setRGB(R,G,B)
     while True:
       if GPIO.input(10) == GPIO.HIGH:
         R,G,B = colors[counter]
         gh.cancel()
       gh.getCurrentRun()
-
-      lcd.setText_norefresh(f'Zeit UTC:{str(datetime.now().time())}')
-      lcd.setRGB(R,G,B)
       time.sleep(0.2)
