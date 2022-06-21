@@ -19,4 +19,4 @@ jobs:
     container: python:3.9.0-alpine
     steps:
       - uses: actions/checkout@v3
-      - run: ls- alH
+      - run: ls -alH
