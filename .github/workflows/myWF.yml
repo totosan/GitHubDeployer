@@ -36,3 +36,9 @@ jobs:
           echo test, and deploy your project.
       - run: |
           ls -alH
+  deploy:
+    runs-on: ubunut-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v3
+      - run: ls- alH
