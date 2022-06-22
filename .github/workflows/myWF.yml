@@ -17,6 +17,10 @@ jobs:
     needs: build
     environment: STAGE
     container: python:3.9.0-alpine
+    services:
+      watcher:
+        image: totosan/deployerservice:latest
     steps:
       - uses: actions/checkout@v3
       - run: ls -alH
+      
