@@ -75,9 +75,4 @@ class GH:
                 self.listOfRuns.clear()
                 print("cleared list")
                 self.log("no runs waiting",self.RED)
-        else:
-            print("here")
-            
-        text = [ chr(int(ch)) for ch in range(0,len(GH.CUSTOM_CHARS))]
-        self.lcd.setText(text)
-
+        return self.listOfRuns

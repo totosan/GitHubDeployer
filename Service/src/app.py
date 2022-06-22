@@ -1,5 +1,5 @@
 from github_caller import GH
-from flask import Flask, jsonify, redirect, render_template, Response
+from flask import Flask, jsonify
 
 app = Flask(__name__)
 
@@ -7,7 +7,8 @@ gh = GH()
 
 @app.route("/")
 def index():
-    return 'Good', 200
+    runs=gh.getCurrentRun()
+    return jsonify(runs)
 
 @app.route("/cancel")
 def cancel():
