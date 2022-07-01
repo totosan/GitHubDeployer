@@ -22,16 +22,20 @@ class DeployerService:
         self.RED = Color(100,0,0)
         self.GREEN=Color(0,100,0)
         self.BLUE=Color(0,0,100)
+        self.NEUTRAL=Color(128,128,128)
         
         if(not lcd):
             lcd = LCD()
         self.lcd = lcd
         self.listOfRuns = []
+        self.start_url = "https://totosan-githubdeployer-jjw965pq3p74w-8080.githubpreview.dev/start"
+        self.reject_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/reject"
+        self.approve_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/approve"
         self.cancel_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/cancel"
         self.blank_run_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io"
 
         # init custom characters
-        [self.lcd.create_char(i,GH.CUSTOM_CHARS[i]) for i in range(0,len(GH.CUSTOM_CHARS))]
+        [self.lcd.create_char(i,DeployerService.CUSTOM_CHARS[i]) for i in range(0,len(DeployerService.CUSTOM_CHARS))]
         
     def log(self, text, color):
         self.lcd.setText_norefresh(f'{text}')
@@ -45,7 +49,32 @@ class DeployerService:
             if(res.ok):
                 self.log("canceling...",self.RED)
                 self.listOfRuns.remove(i)
+    
+    def approve(self):
+        for i in self.listOfRuns:
+            res = requests.post(self.approve_url.format(i))
+            if(res.ok):
+                self.log("approving...",self.GREEN)
+                self.listOfRuns.remove(i)
+    
+    def start(self):
+        res = requests.post(url=self.start_url)
+        print(res)
+        if res.ok:
+            print("started")
+            self.log("started WF", self.NEUTRAL)
+        else:
+            print("not started")
+            self.log("NOT started", self.NEUTRAL)
             
+            
+    def reject(self):
+        for i in self.listOfRuns:
+            res = requests.post(self.approve_url.format(i))
+            if(res.ok):
+                self.log("approving...",self.GREEN)
+                self.listOfRuns.remove(i)
+                
     def getCurrentRun(self):
         res = requests.get(url=self.blank_run_url)
         if(res.ok):
@@ -58,7 +87,7 @@ class DeployerService:
                         self.listOfRuns.append(runid)
                         print(runid)
                         #self.lcd.setText_norefresh(f'Run is waiting')
-                        self.log("run is waiting",self.GREEN)
+                        self.log("run is waiting",self.BLUE)
                         
             elif(len(self.listOfRuns)>0):
                 self.listOfRuns.clear()

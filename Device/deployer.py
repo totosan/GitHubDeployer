@@ -16,14 +16,26 @@ counter=0
 if __name__=="__main__":
     GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BOARD)
-    GPIO.setup(10, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+    CANCEL_BTN=12
+    APPROVE_BTN=10
+    START_BTN=16
+    GPIO.setup(CANCEL_BTN, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+    GPIO.setup(APPROVE_BTN, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+    GPIO.setup(START_BTN, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
     R = 128
     G = 128
     B = 128
     lcd.setRGB(R,G,B)
     while True:
-      if GPIO.input(10) == GPIO.HIGH:
-        R,G,B = colors[counter]
+      if GPIO.input(CANCEL_BTN) == GPIO.HIGH :
+        R,G,B = colors[0]
         dpSvc.cancel()
-      dpSvc.getCurrentRun()
+      if GPIO.input(APPROVE_BTN) == GPIO.HIGH:
+        R,G,B = colors[1]
+        dpSvc.approve()
+      if GPIO.input(START_BTN) == GPIO.HIGH:
+        R,G,B = colors[2]
+        dpSvc.start()
+        
+      lst=dpSvc.getCurrentRun()
       time.sleep(0.2)
