@@ -1,7 +1,4 @@
-from ctypes.wintypes import PINT
-from termios import B0
 import requests, os
-from github import Workflow,Github
 from lcd import LCD
 
 class Color:
@@ -13,7 +10,7 @@ class Color:
     def Get(self):
         return self.R,self.G,self.B
                
-class GH:
+class DeployerService:
     
     CUSTOM_CHARS = [   
                         [0x0E,0x15,0x15,0x17,0x11,0x11,0x0E,0x00],
@@ -22,9 +19,6 @@ class GH:
                     ]
         
     def __init__(self, lcd=None):
-        OWNER="totosan"
-        REPO="GitHubIntegrationDWX"
-
         self.RED = Color(100,0,0)
         self.GREEN=Color(0,100,0)
         self.BLUE=Color(0,0,100)
@@ -33,14 +27,9 @@ class GH:
             lcd = LCD()
         self.lcd = lcd
         self.listOfRuns = []
-        self.cancel_url = "https://api.github.com/repos/totosan/GitHubIntegrationDWX/actions/runs/{0}/cancel"
-        self.blank_run_url = "https://api.github.com/repos/totosan/GitHubIntegrationDWX/actions/workflows/blank.yml/runs"
-        self.run_url = f"https://api.github.com/repos/{OWNER}/{REPO}/actions/runs"
-        self.token = str(os.getenv('TOKEN',''))
-        self.gh_headers={
-                        'Authorization': f'token {self.token}',
-                        'Accept': 'application/vnd.github.v3+json'
-                        }
+        self.cancel_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/cancel"
+        self.blank_run_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io"
+
         # init custom characters
         [self.lcd.create_char(i,GH.CUSTOM_CHARS[i]) for i in range(0,len(GH.CUSTOM_CHARS))]
         
@@ -52,19 +41,19 @@ class GH:
         
     def cancel(self):
         for i in self.listOfRuns:
-            res = requests.post(self.cancel_url.format(i), headers=self.gh_headers)
+            res = requests.post(self.cancel_url.format(i))
             if(res.ok):
                 self.log("canceling...",self.RED)
                 self.listOfRuns.remove(i)
             
     def getCurrentRun(self):
-        res = requests.get(url=self.blank_run_url+"?status=waiting", headers=self.gh_headers)
+        res = requests.get(url=self.blank_run_url)
         if(res.ok):
             wfs = res.json()
-            if len(wfs["workflow_runs"]) > 0:
+            if len(wfs) > 0:
                 # runs found
-                for i in wfs["workflow_runs"]:
-                    runid = i["id"]
+                for i in wfs:
+                    runid = i
                     if not runid in self.listOfRuns:
                         self.listOfRuns.append(runid)
                         print(runid)

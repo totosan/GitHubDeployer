@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 import time
 from lcd import LCD
-from github_caller import GH
+from deployerService import DeployerService
 import RPi.GPIO as GPIO
 from datetime import datetime
 
 lcd = LCD()
-gh = GH()
+dpSvc = DeployerService()
 
 #             0        1         2
 colors = [(255,0,0),(0,255,0),(0,0,255)]
@@ -24,6 +24,6 @@ if __name__=="__main__":
     while True:
       if GPIO.input(10) == GPIO.HIGH:
         R,G,B = colors[counter]
-        gh.cancel()
-      gh.getCurrentRun()
+        dpSvc.cancel()
+      dpSvc.getCurrentRun()
       time.sleep(0.2)
