@@ -23,12 +23,13 @@ class DeployerService:
         self.GREEN=Color(0,100,0)
         self.BLUE=Color(0,0,100)
         self.NEUTRAL=Color(128,128,128)
+        self.YELLOW=Color(255,248,197)
         
         if(not lcd):
             lcd = LCD()
         self.lcd = lcd
         self.listOfRuns = []
-        self.start_url = "https://totosan-githubdeployer-jjw965pq3p74w-8080.githubpreview.dev/start"
+        self.start_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/start"
         self.reject_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/reject"
         self.approve_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/approve"
         self.cancel_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/cancel"
@@ -40,7 +41,6 @@ class DeployerService:
     def log(self, text, color):
         self.lcd.setText_norefresh(f'{text}')
         R,G,B=color.Get()
-        print(R,G,B)
         self.lcd.setRGB(R,G,B)
         
     def cancel(self):
@@ -59,20 +59,19 @@ class DeployerService:
     
     def start(self):
         res = requests.post(url=self.start_url)
-        print(res)
         if res.ok:
             print("started")
-            self.log("started WF", self.NEUTRAL)
+            self.log("started WF", self.YELLOW)
         else:
             print("not started")
-            self.log("NOT started", self.NEUTRAL)
+            self.log("NOT started", self.YELLOW)
             
             
     def reject(self):
         for i in self.listOfRuns:
-            res = requests.post(self.approve_url.format(i))
+            res = requests.post(self.reject_url.format(i))
             if(res.ok):
-                self.log("approving...",self.GREEN)
+                self.log("Rejected...",self.RED)
                 self.listOfRuns.remove(i)
                 
     def getCurrentRun(self):
@@ -86,11 +85,12 @@ class DeployerService:
                     if not runid in self.listOfRuns:
                         self.listOfRuns.append(runid)
                         print(runid)
-                        #self.lcd.setText_norefresh(f'Run is waiting')
-                        self.log("run is waiting",self.BLUE)
+                        self.log(f"{runid} is waiting",self.BLUE)
                         
             elif(len(self.listOfRuns)>0):
                 self.listOfRuns.clear()
                 print("cleared list")
-                self.log("no runs waiting",self.RED)
+                self.log("cleared",self.RED)
+        if(len(self.listOfRuns)==0):
+            self.log("no runs waiting",self.NEUTRAL)
         return self.listOfRuns
