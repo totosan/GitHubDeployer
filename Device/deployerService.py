@@ -23,13 +23,14 @@ class DeployerService:
         self.GREEN=Color(0,100,0)
         self.BLUE=Color(0,0,100)
         self.NEUTRAL=Color(128,128,128)
-        self.YELLOW=Color(255,248,197)
+        self.YELLOW=Color(244,130,37)
         
         if(not lcd):
             lcd = LCD()
         self.lcd = lcd
         self.listOfRuns = []
         self.start_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/start"
+        self.simulate_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/simulateError"
         self.reject_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/reject"
         self.approve_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/approve"
         self.cancel_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/cancel"
@@ -65,7 +66,14 @@ class DeployerService:
         else:
             print("not started")
             self.log("NOT started", self.YELLOW)
-            
+
+    def simulate(self, value):
+        body = {'CPU': value}
+        res = requests.post(url=self.simulate_url, json=body)
+        if res.ok:
+            print(res.content)
+            #print("High CPU")
+            self.log("High CPU", self.RED)
             
     def reject(self):
         for i in self.listOfRuns:

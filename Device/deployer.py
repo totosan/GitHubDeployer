@@ -5,9 +5,12 @@ from lcd import LCD
 from deployerService import DeployerService
 import RPi.GPIO as GPIO
 from datetime import datetime
+from encoder import Encoder
 
 lcd = LCD()
 dpSvc = DeployerService()
+loop = None
+timer = None
 
 CANCEL_BTN = 12
 APPROVE_BTN = 10
@@ -18,6 +21,33 @@ SWITCH = 18
 colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255)]
 counter = 0
 isTerminator = False
+bouncetime = 100
+
+
+class Timer:
+    def __init__(self, timeout, callback):
+        self._timeout = timeout
+        self._callback = callback
+        self._task = asyncio.ensure_future(self._job())
+
+    async def _job(self):
+        while True:
+            await asyncio.sleep(self._timeout)
+            await self._callback()
+
+    def cancel(self):
+        self._task.cancel()
+
+
+async def timeout_callback():
+    lst = dpSvc.getCurrentRun()
+    if isTerminator:
+        lcd.setRGB(dpSvc.YELLOW.R, dpSvc.YELLOW.G, dpSvc.YELLOW.B)
+    
+def valueChanged(value, direction):
+    if(value == 50):
+        print(f"value of rotary: {value}")
+        dpSvc.simulate(value)
 
 
 def setup_hardware():
@@ -30,26 +60,51 @@ def setup_hardware():
     GPIO.setup(SWITCH, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
 
-if __name__ == "__main__":
-      setup_hardware()
-      lcd.setRGB(dpSvc.NEUTRAL.R, dpSvc.NEUTRAL.G, dpSvc.NEUTRAL.B)
-      while True:
-            if GPIO.input(CANCEL_BTN) == GPIO.HIGH:
-                  R, G, B = colors[0]
-                  if(isTerminator):
-                      dpSvc.cancel()
-                  else:
-                      dpSvc.reject()
-            if GPIO.input(APPROVE_BTN) == GPIO.HIGH:
-                R, G, B = colors[1]
-                dpSvc.approve()
-            if GPIO.input(START_BTN) == GPIO.HIGH:
-                R, G, B = colors[2]
-                dpSvc.start()
-            if GPIO.input(SWITCH) == GPIO.HIGH:
-                isTerminator = True
-            else:
-                isTerminator = False
+def button_pushed(_):
+    global isTerminator
+    if(loop is None):
+        print("no loop")
+        return
+    if GPIO.input(CANCEL_BTN) == GPIO.HIGH:
+        print("Cancel")
+        if(isTerminator):
+            loop.call_soon_threadsafe(dpSvc.cancel())
+        else:
+            loop.call_soon_threadsafe(dpSvc.reject())
+            
+    if GPIO.input(APPROVE_BTN) == GPIO.HIGH:
+        print("Approve")
+        loop.call_soon_threadsafe(dpSvc.approve())
 
-            lst = dpSvc.getCurrentRun()
-            time.sleep(0.2)
+    if GPIO.input(START_BTN) == GPIO.HIGH:
+        print("Start")
+        loop.call_soon_threadsafe(dpSvc.start())
+    
+    if GPIO.input(SWITCH):
+        isTerminator = not isTerminator
+#    else:
+#        print("Automator")
+#        isTerminator = False
+        
+def exit_handler():
+    print('closed loop')
+    GPIO.cleanup()
+    loop.close()
+
+if __name__ == "__main__":
+    setup_hardware()
+    lcd.setRGB(dpSvc.NEUTRAL.R, dpSvc.NEUTRAL.G, dpSvc.NEUTRAL.B)
+
+    try:
+        timer = Timer(1,timeout_callback)
+        e1 = Encoder(35, 37, GPIO, callback=valueChanged)
+        
+        GPIO.add_event_detect(CANCEL_BTN, GPIO.RISING, callback=button_pushed, bouncetime=bouncetime)    
+        GPIO.add_event_detect(APPROVE_BTN, GPIO.RISING, callback=button_pushed, bouncetime=bouncetime)    
+        GPIO.add_event_detect(START_BTN, GPIO.RISING, callback=button_pushed, bouncetime=bouncetime)    
+        GPIO.add_event_detect(SWITCH, GPIO.BOTH, callback=button_pushed, bouncetime=bouncetime)    
+
+        loop = asyncio.get_event_loop()
+        loop.run_forever()
+    finally:
+        exit_handler()
