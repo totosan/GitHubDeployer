@@ -82,9 +82,10 @@ def button_pushed(_):
     
     if GPIO.input(SWITCH):
         isTerminator = not isTerminator
-#    else:
-#        print("Automator")
-#        isTerminator = False
+        if (isTerminator):
+            print("Terminator")
+        else:
+            print("Automator")
         
 def exit_handler():
     print('closed loop')
