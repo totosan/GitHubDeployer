@@ -10,8 +10,10 @@ class GH:
         runid="{0}"
         self.listOfRuns = []
         self.cancel_url = "https://api.github.com/repos/totosan/GitHubIntegrationDWX/actions/runs/{0}/cancel"
-        self.blank_run_url = "https://api.github.com/repos/totosan/GitHubIntegrationDWX/actions/workflows/ringbasedCICD.yml/runs"
+        self.blank_run_url = "https://api.github.com/repos/totosan/GitHubIntegrationDWX/actions/runs"
         self.pendings = f"https://api.github.com/repos/{OWNER}/{REPO}/actions/runs/{runid}/pending_deployments"
+        self.starter_url = f"https://api.github.com/repos/{OWNER}/{REPO}/dispatches"
+        
         self.token = str(os.getenv('TOKEN',''))
         self.gh_headers={
                         'Authorization': f'token {self.token}',
@@ -49,7 +51,19 @@ class GH:
             res = requests.post(self.cancel_url.format(i), headers=self.gh_headers)
             if(res.ok):
                 self.listOfRuns.remove(i)
-            
+
+    def startWF(self, isRing):
+        if not isRing:
+            body={'event_type':'on_deployer','client_payload':{"Experiment":"True"}}
+        else:
+            body={'event_type':'on_deployer_ring','client_payload':{"Experiment":"True"}}
+        res = requests.post(url=self.starter_url, headers=self.gh_headers, json=body)
+        if res.ok:
+            return True
+        else:
+            print(res.json())
+            return False
+        
     def getCurrentRun(self):
         res = requests.get(url=self.blank_run_url+"?status=waiting", headers=self.gh_headers)
         if(res.ok):

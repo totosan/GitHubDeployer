@@ -58,8 +58,9 @@ class DeployerService:
                 self.log("approving...",self.GREEN)
                 self.listOfRuns.remove(i)
     
-    def start(self):
-        res = requests.post(url=self.start_url)
+    def start(self, isRing):
+        body={'isTerminator':isRing}
+        res = requests.post(url=self.start_url, json=body)
         if res.ok:
             print("started")
             self.log("started WF", self.YELLOW)

@@ -78,7 +78,7 @@ def button_pushed(_):
 
     if GPIO.input(START_BTN) == GPIO.HIGH:
         print("Start")
-        loop.call_soon_threadsafe(dpSvc.start())
+        loop.call_soon_threadsafe(dpSvc.start(isTerminator))
     
     if GPIO.input(SWITCH):
         isTerminator = not isTerminator
