@@ -60,6 +60,7 @@ class DeployerService:
     
     def start(self, isRing):
         body={'isTerminator':isRing}
+        print(body)
         res = requests.post(url=self.start_url, json=body)
         if res.ok:
             print("started")

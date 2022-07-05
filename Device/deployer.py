@@ -21,7 +21,7 @@ SWITCH = 18
 colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255)]
 counter = 0
 isTerminator = False
-bouncetime = 100
+bouncetime = 500
 
 
 class Timer:
@@ -43,7 +43,7 @@ async def timeout_callback():
     lst = dpSvc.getCurrentRun()
     if isTerminator:
         lcd.setRGB(dpSvc.YELLOW.R, dpSvc.YELLOW.G, dpSvc.YELLOW.B)
-    
+
 def valueChanged(value, direction):
     if(value == 50):
         print(f"value of rotary: {value}")
@@ -71,22 +71,28 @@ def button_pushed(_):
             loop.call_soon_threadsafe(dpSvc.cancel())
         else:
             loop.call_soon_threadsafe(dpSvc.reject())
+        return
             
     if GPIO.input(APPROVE_BTN) == GPIO.HIGH:
         print("Approve")
         loop.call_soon_threadsafe(dpSvc.approve())
+        return
 
     if GPIO.input(START_BTN) == GPIO.HIGH:
         print("Start")
         loop.call_soon_threadsafe(dpSvc.start(isTerminator))
-    
-    if GPIO.input(SWITCH):
+        return
+
+    if GPIO.input(SWITCH) == GPIO.HIGH:
         isTerminator = not isTerminator
         if (isTerminator):
             print("Terminator")
+            lcd.setText("Terminator")
         else:
             print("Automator")
-        
+            lcd.setText("Automator")
+        return
+
 def exit_handler():
     print('closed loop')
     GPIO.cleanup()
