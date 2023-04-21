@@ -1,5 +1,5 @@
 import time,sys
-
+from iLCDDisplay import iLCDDisplay
 import smbus
 import RPi.GPIO as GPIO
 rev = GPIO.RPI_REVISION
@@ -8,7 +8,7 @@ if rev == 2 or rev == 3:
 else:
     bus = smbus.SMBus(0)
 
-class LCD:
+class LCD(iLCDDisplay):
     # this device has two I2C addresses
     def __init__(self):
         self.DISPLAY_RGB_ADDR = 0x62

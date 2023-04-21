@@ -1,5 +1,5 @@
 import requests, os
-from lcd import LCD
+from FakeLCD import FakeLCD
 
 class Color:
     def __init__(self, R=100,G=100,B=100) -> None:
@@ -26,7 +26,7 @@ class DeployerService:
         self.YELLOW=Color(244,130,37)
         
         if(not lcd):
-            lcd = LCD()
+            lcd = FakeLCD()
         self.lcd = lcd
         self.listOfRuns = []
         self.start_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/start"

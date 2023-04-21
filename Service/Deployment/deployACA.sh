@@ -1,6 +1,6 @@
 #az containerapp env create -n deployer -g $RG
 tag=$(date '+%y%m%d%H%M')
-tag="latest"
+#tag="latest"
 az containerapp create -n deployer-app -g $RG \
             --image totosan/deployerservice \
             --environment deployer \

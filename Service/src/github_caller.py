@@ -42,9 +42,9 @@ class GH:
             print(json.dumps(body))
             res = requests.post(self.pendings.format(runid), headers=self.gh_headers, json=body)
             if(res.ok):
-                print("Approval sent")
+                print("Rejection sent")
             else:
-                print("issues with sending approval")
+                print("issues with sending rejection")
         
     def cancel(self):
         for i in self.listOfRuns:
@@ -65,10 +65,12 @@ class GH:
             return False
         
     def getCurrentRun(self):
-        res = requests.get(url=self.blank_run_url+"?status=waiting", headers=self.gh_headers)
+        res = requests.get(url=self.blank_run_url+"?status=", headers=self.gh_headers)
         if(res.ok):
             wfs = res.json()
             if len(wfs["workflow_runs"]) > 0:
+                # filter the runs to only the ones that are waiting
+                wfs["workflow_runs"] = list(filter(lambda x: x["status"] == "waiting", wfs["workflow_runs"]))
                 # runs found
                 for i in wfs["workflow_runs"]:
                     runid = i["id"]
