@@ -78,12 +78,12 @@ class GH:
                         self.listOfRuns.append(runid)
                         print(runid)
                         #self.lcd.setText_norefresh(f'Run is waiting')
-                        self.log("run is waiting",self.GREEN)
+                        #self.log("run is waiting",self.GREEN)
                         
             elif(len(self.listOfRuns)>0):
                 self.listOfRuns.clear()
                 print("cleared list")
-                self.log("no runs waiting",self.RED)
+                #self.log("no runs waiting",self.RED)
         else:
             print("Error on GH call")
         return self.listOfRuns
