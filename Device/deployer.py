@@ -5,7 +5,7 @@ from lcd import LCD
 from deployerService import DeployerService
 import RPi.GPIO as GPIO
 from datetime import datetime
-from encoder import Encoder
+from rotaryEncoder import RotaryEncoder
 
 lcd = LCD()
 dpSvc = DeployerService()
@@ -104,7 +104,7 @@ if __name__ == "__main__":
 
     try:
         timer = Timer(1,timeout_callback)
-        e1 = Encoder(35, 37, GPIO, callback=valueChanged)
+        e1 = RotaryEncoder(35, 37, GPIO, callback=valueChanged)
         
         GPIO.add_event_detect(CANCEL_BTN, GPIO.RISING, callback=button_pushed, bouncetime=bouncetime)    
         GPIO.add_event_detect(APPROVE_BTN, GPIO.RISING, callback=button_pushed, bouncetime=bouncetime)    
