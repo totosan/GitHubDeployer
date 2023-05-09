@@ -2,8 +2,9 @@ import requests
 import datetime
 
 # Set up authentication
+# replace ### by token
 headers = {
-    "Authorization": "Bearer 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",
+    "Authorization": "Bearer ###",
     "Accept": "application/vnd.github.v3+json"
 }
 
