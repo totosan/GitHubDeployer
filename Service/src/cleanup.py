@@ -1,10 +1,11 @@
 import requests
 import datetime
+import os
 
 # Set up authentication
 # replace ### by token
 headers = {
-    "Authorization": "Bearer ###",
+    "Authorization": f"Bearer {os.getenv('TOKEN','')}",
     "Accept": "application/vnd.github.v3+json"
 }
 
@@ -16,8 +17,8 @@ response = requests.get(
     "https://api.github.com/repos/totosan/GitHubIntegrationDWX/actions/workflows",
     headers=headers
 )
-try:
 
+try:
     workflows = response.json()["workflows"]
 except KeyError:
     print("No workflows found")
