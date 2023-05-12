@@ -3,7 +3,7 @@
 # from https://github.com/nstansby/rpi-rotary-encoder-python/blob/master/encoder.py 
 
 
-class Encoder:
+class RotaryEncoder:
 
     def __init__(self, leftPin, rightPin, GPIO, callback=None):
         self.leftPin = leftPin

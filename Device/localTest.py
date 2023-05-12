@@ -8,7 +8,7 @@ import asyncio
 from FakeLCD import FakeLCD
 from deployerService import DeployerService
 from datetime import datetime
-from encoder import Encoder
+from Device.rotaryEncoder import RotaryEncoder
 
         
 fakeLCD = FakeLCD()

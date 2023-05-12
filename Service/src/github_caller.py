@@ -68,9 +68,9 @@ class GH:
         res = requests.get(url=self.blank_run_url+"?status=", headers=self.gh_headers)
         if(res.ok):
             wfs = res.json()
+            # filter the runs to only the ones that are waiting
+            wfs["workflow_runs"] = list(filter(lambda x: x["status"] == "waiting", wfs["workflow_runs"]))
             if len(wfs["workflow_runs"]) > 0:
-                # filter the runs to only the ones that are waiting
-                wfs["workflow_runs"] = list(filter(lambda x: x["status"] == "waiting", wfs["workflow_runs"]))
                 # runs found
                 for i in wfs["workflow_runs"]:
                     runid = i["id"]
