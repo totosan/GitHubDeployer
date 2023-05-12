@@ -9,8 +9,8 @@ class GH:
         REPO="GitHubIntegrationDWX"
         runid="{0}"
         self.listOfRuns = []
-        self.cancel_url = "https://api.github.com/repos/totosan/GitHubIntegrationDWX/actions/runs/{0}/cancel"
-        self.blank_run_url = "https://api.github.com/repos/totosan/GitHubIntegrationDWX/actions/runs"
+        self.cancel_url = "https://api.github.com/repos/{OWNER}/{REPO}/actions/runs/{0}/cancel"
+        self.blank_run_url = "https://api.github.com/repos/{OWNER}/{REPO}/actions/runs"
         self.pendings = f"https://api.github.com/repos/{OWNER}/{REPO}/actions/runs/{runid}/pending_deployments"
         self.starter_url = f"https://api.github.com/repos/{OWNER}/{REPO}/dispatches"
         

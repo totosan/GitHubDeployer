@@ -42,17 +42,20 @@ class Timer:
 
 async def timeout_callback():
     global isTerminator
-    switchState = GPIO.input(SWITCHa)
-    print(f'SWITCH IS {GPIO.input(SWITCHa)}')
-    if switchState == 0:
-        isTerminator = True
-    else:
-        isTerminator = False
+    try:
+        switchState = GPIO.input(SWITCHa)
+        print(f'SWITCH IS {GPIO.input(SWITCHa)}')
+        if switchState == 0:
+            isTerminator = True
+        else:
+            isTerminator = False
+            
+        lst = dpSvc.getCurrentRun()
+        if isTerminator:
+            lcd.setRGB(dpSvc.YELLOW.R, dpSvc.YELLOW.G, dpSvc.YELLOW.B)
+    except Exception as e:
+        print(e)
         
-    lst = dpSvc.getCurrentRun()
-    if isTerminator:
-        lcd.setRGB(dpSvc.YELLOW.R, dpSvc.YELLOW.G, dpSvc.YELLOW.B)
-
 def valueChanged(value, direction):
     if(value == 50):
         print(f"value of rotary: {value}")
