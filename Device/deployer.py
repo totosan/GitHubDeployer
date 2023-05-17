@@ -57,8 +57,12 @@ async def timeout_callback():
         print(e)
         
 def valueChanged(value, direction):
-    if(value == 50):
+    if(value >= 50):
         print(f"value of rotary: {value}")
+        # display a progress as # symbol that has a full length of 16 chars
+        # where a value of 50 is 16th char
+        # so each step is 50/16 = 3.125
+        lcd.setText(f"{'#' * int(value/3.125)}")
         dpSvc.simulate(value)
 
 

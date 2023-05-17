@@ -5,10 +5,13 @@ from wsgiref.util import request_uri
 
 from github_caller import GH
 from flask import Flask, jsonify, request
+import logging
+
+logging.basicConfig(level=logging.INFO,format='%(asctime)s %(levelname)s %(message)s')
 
 app = Flask(__name__)
 app.debug = True
-gh = GH()
+gh = GH(logging)
 
 
 @app.route("/")
@@ -16,6 +19,11 @@ def index():
     runs = gh.getCurrentRun()
     return jsonify(runs)
 
+@app.route("/payload", methods=["POST"])
+def protectionRule():#b324b207f46ba3cb0d15164f70d5eab326107b4b
+    json = request.get_json()
+    
+    return 'started', 200
 
 @app.route("/start", methods=["POST"])
 def startWF():
