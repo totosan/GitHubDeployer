@@ -66,3 +66,6 @@ class RotaryEncoder:
 
     def getValue(self):
         return self.value
+    
+    def resetValue(self):
+        self.value = 0

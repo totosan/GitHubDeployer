@@ -23,8 +23,7 @@ colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255)]
 counter = 0
 isTerminator = False
 bouncetime = 100
-
-
+e1 = None
 class Timer:
     def __init__(self, timeout, callback):
         self._timeout = timeout
@@ -64,6 +63,7 @@ def valueChanged(value, direction):
         # so each step is 50/16 = 3.125
         lcd.setText(f"{'#' * int(value/3.125)}")
         dpSvc.simulate(value)
+        e1.resetValue()
 
 
 def setup_hardware():
