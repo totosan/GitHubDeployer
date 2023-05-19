@@ -2,6 +2,7 @@
 import jwt
 import time
 import sys
+import requests
 
 # Get PEM file path
 if len(sys.argv) > 1:
@@ -33,4 +34,8 @@ jwt_instance = jwt.JWT()
 print(jwt_instance)
 encoded_jwt = jwt_instance.encode(payload, signing_key, alg='RS256')
 
-print(f"JWT:  {encoded_jwt}")
+resp = requests.post("https://api.github.com/app/installations/37498797/access_tokens", headers={'Authorization': f'Bearer {encoded_jwt}'})
+if not resp.ok:
+    raise Exception(f'Failed to get access token {resp.content}')
+
+print( resp.json()['token'])
