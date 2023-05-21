@@ -1,5 +1,6 @@
 .env
 .venv
+.webenv
 __pycache__
 *.swp
 *.pem

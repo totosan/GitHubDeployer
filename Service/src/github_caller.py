@@ -1,7 +1,7 @@
 import json
 from urllib import response
 import requests, os
-              
+import ghAuth
 class GH:        
     def __init__(self, logging=None):
         OWNER="totosan"
@@ -49,8 +49,20 @@ class GH:
             if(res.ok):
                 print("Rejection sent")
             else:
-                print("issues with sending rejection")
-        
+                print(f"issues with sending rejection '{res.json()}'")
+
+    def rejectViaApp(self, callbackUrl):
+        # post to callbackUrl
+        body = {"state":"rejected", "comment":"Oh dear, I cannot do that."}
+        print(json.dumps(body))
+        # implement access_token request for accessing callbackUrl
+        res = requests.post(callbackUrl, headers=self.gh_headers, json=body)
+        if(res.ok):
+            print("Rejection sent")
+        else:
+            print(f"issues with sending rejection '{res.json()}'")
+            
+                
     def cancel(self):
         try:
             for i in self.listOfRuns:

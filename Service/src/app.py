@@ -2,17 +2,20 @@ from crypt import methods
 from http.client import BAD_GATEWAY, OK
 from urllib import response
 from wsgiref.util import request_uri
-
+import json as JSON
 from github_caller import GH
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, session
+from cachetools import cached, TTLCache
+
+cache = TTLCache(maxsize=100, ttl=360)
 import logging
 
 logging.basicConfig(level=logging.INFO,format='%(asctime)s %(levelname)s %(message)s')
 
 app = Flask(__name__)
 app.debug = True
+app.secret_key = 'super secret key'
 gh = GH(logging)
-
 
 @app.route("/")
 def index():
@@ -20,10 +23,15 @@ def index():
     return jsonify(runs)
 
 @app.route("/payload", methods=["POST"])
-def protectionRule():#b324b207f46ba3cb0d15164f70d5eab326107b4b
+def protectionRule():
     json = request.get_json()
-    
+    session['payload'] = json
     return 'started', 200
+
+@app.route("/callback", methods=["GET"])
+def getCallback():
+    callback = session['payload']['deployment_callback_url']
+    return f"{callback}", 200
 
 @app.route("/start", methods=["POST"])
 def startWF():
@@ -66,5 +74,8 @@ def ping():
 def simulateError():
     data = request.get_json()
     print(data)
-    print(f"CPU HIGH")
+    if int(data["CPU"]) > 50:
+        print(f"CPU HIGH")
+        callback = session['payload']['deployment_callback_url']
+        gh.rejectViaApp(callback)
     return f'{data}', 200

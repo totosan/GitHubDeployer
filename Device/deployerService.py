@@ -76,7 +76,7 @@ class DeployerService:
             print(res.content)
             #print("High CPU")
             self.log("High CPU", self.RED)
-            self.cancel()
+            #self.cancel()
             
     def reject(self):
         for i in self.listOfRuns:
