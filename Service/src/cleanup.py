@@ -10,7 +10,7 @@ headers = {
 }
 
 # Set the retention period to 90 days ago
-retention_period = datetime.datetime.utcnow() - datetime.timedelta(days=90)
+retention_period = datetime.datetime.utcnow() - datetime.timedelta(minutes=1)
 
 # Retrieve the workflows in the repository
 response = requests.get(
