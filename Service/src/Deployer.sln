@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeployerApp", "DeployerApp\DeployerApp.csproj", "{AC2F5567-64B3-4002-83B6-2C4FB7E22F11}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Grains", "Grains\Grains.csproj", "{6EEE4BDC-9F4D-427A-9C9F-ADB71EB84E61}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "silo", "silo\silo.csproj", "{D3AFD7EA-E94E-4549-9B88-EBD85CD9F5DA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AC2F5567-64B3-4002-83B6-2C4FB7E22F11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC2F5567-64B3-4002-83B6-2C4FB7E22F11}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC2F5567-64B3-4002-83B6-2C4FB7E22F11}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC2F5567-64B3-4002-83B6-2C4FB7E22F11}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6EEE4BDC-9F4D-427A-9C9F-ADB71EB84E61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6EEE4BDC-9F4D-427A-9C9F-ADB71EB84E61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6EEE4BDC-9F4D-427A-9C9F-ADB71EB84E61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6EEE4BDC-9F4D-427A-9C9F-ADB71EB84E61}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D3AFD7EA-E94E-4549-9B88-EBD85CD9F5DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3AFD7EA-E94E-4549-9B88-EBD85CD9F5DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3AFD7EA-E94E-4549-9B88-EBD85CD9F5DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3AFD7EA-E94E-4549-9B88-EBD85CD9F5DA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
