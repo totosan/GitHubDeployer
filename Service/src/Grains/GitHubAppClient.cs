@@ -136,7 +136,6 @@ namespace GitHubActions.Gates.Framework.Clients
             };
 
             var client = await GetOCtokit();
-
             return await client.Connection.Post(new Uri(callbackUrl), payload, AcceptValue);
         }
 

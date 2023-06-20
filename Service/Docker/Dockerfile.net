@@ -1,6 +1,8 @@
 FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS base
 WORKDIR /app
 EXPOSE 8080
+EXPOSE 30000
+EXPOSE 11111
 
 ENV ASPNETCORE_URLS=http://+:8080
 
@@ -11,10 +13,10 @@ USER appuser
 
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
-COPY ["./src/DeployerApp/DeployerApp.csproj", "DeployerApp/"]
-RUN dotnet restore "DeployerApp/DeployerApp.csproj"
+COPY ["Service/src/DeployerApp/DeployerApp.csproj", "Service/src/DeployerApp/"]
+RUN dotnet restore "Service/src/DeployerApp/DeployerApp.csproj"
 COPY . .
-WORKDIR "/src/DeployerApp"
+WORKDIR "/src/Service/src/DeployerApp"
 RUN dotnet build "DeployerApp.csproj" -c Release -o /app/build
 
 FROM build AS publish

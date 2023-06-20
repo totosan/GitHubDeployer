@@ -4,7 +4,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="jwt" Version="10.0.2" />
-    <PackageReference Include="Microsoft.Orleans.Client" Version="7.1.2" />
+    <PackageReference Include="Microsoft.Orleans.Server" Version="7.1.2" />
     <PackageReference Include="Microsoft.Orleans.clustering.azurestorage" Version="7.1.2" />
     <PackageReference Include="Microsoft.Orleans.Persistence.AzureStorage" Version="7.1.2" />
     <PackageReference Include="octokit" Version="6.0.0" />

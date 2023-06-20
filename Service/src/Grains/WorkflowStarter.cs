@@ -1,7 +1,7 @@
 //json serialization
 
 [GenerateSerializer]
-public class Workflow
+public class WorkflowStarter
 {
     public bool isTerminator { get; set; }
 }

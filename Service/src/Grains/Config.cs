@@ -1,4 +1,6 @@
-    public static class Config
+using Microsoft.Extensions.Configuration;
+
+public static class Config
     {
         public const string WEBHOOKSECRETNAME = "GHAPP_WEBHOOKSECRET";
         public const string GHAPPPEMCERTIFICATENAME = "GHAPP_PEMCERTIFICATE";

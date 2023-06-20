@@ -5,9 +5,9 @@
     - Approve a run
     - Reject a run
 */
-using Orleans;
-using GitHubActions.Gates.Framework.Models.WebHooks;
+
 using Orleans.Configuration;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 IConfiguration config = null;
@@ -18,6 +18,7 @@ if (builder.Environment.IsDevelopment())
     builder.Host.UseOrleans(server =>
     {
         server.UseLocalhostClustering();
+        server.AddMemoryGrainStorage("wfStore");
     });
 
     // add appsettings to config
@@ -25,33 +26,63 @@ if (builder.Environment.IsDevelopment())
         .AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true)
         .AddEnvironmentVariables()
         .Build();
-}else
+}
+else
 {
-     builder.Host.UseOrleans(builder =>
-    {
-        var envCnn = Environment.GetEnvironmentVariable("AZURE_STORAGE_CONNECTION_STRING");
+    builder.Host.UseOrleans(builder =>
+   {
+       var envCnn = Environment.GetEnvironmentVariable("AZURE_STORAGE_CONNECTION_STRING");
+       Console.WriteLine(envCnn);
 
-        var connectionString = envCnn ?? throw new InvalidOperationException("Missing connection string");
-        builder.UseAzureStorageClustering(options =>
-            options.ConfigureTableServiceClient(connectionString))
-            .AddAzureTableGrainStorage("users", options => options.ConfigureTableServiceClient(connectionString));
-        builder.Configure<SiloOptions>(options =>
-        {
-            options.SiloName = "DeployerSilo";
-        });
+       var connectionString = envCnn ?? throw new InvalidOperationException("Missing connection string");
+       builder.UseAzureStorageClustering(options =>
+           options.ConfigureTableServiceClient(connectionString))
+           .AddAzureTableGrainStorage("wfStore", options => options.ConfigureTableServiceClient(connectionString));
+       builder.Configure<SiloOptions>(options =>
+       {
+           options.SiloName = "DeployerSilo";
+       });
 
-        builder.Configure<ClusterOptions>(options =>
+       builder.Configure<ClusterOptions>(options =>
+       {
+           options.ClusterId = "deployerCluster";
+           options.ServiceId = "healthCheckService";
+       }).ConfigureLogging(logging =>
+       {
+           logging.AddConsole();
+           logging.SetMinimumLevel(LogLevel.Error);
+       });
+   });
+
+    // add appsettings to config
+    config = new ConfigurationBuilder()
+        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+        .AddEnvironmentVariables()
+        .Build();
+    builder.Services
+        .Configure<IConfiguration>(config)
+        .AddLogging(logging =>
         {
-            options.ClusterId = "deployerCluster";
-            options.ServiceId = "healthCheckService";
+            logging.AddConsole();
+            logging.SetMinimumLevel(LogLevel.Warning);
         });
-    });
 }
 
 // add abillity to use swagger and swaggerui
 builder.Services
     .AddEndpointsApiExplorer()
-    .AddSwaggerGen();
+    .AddSwaggerGen()
+    .AddLogging(logging =>
+    {
+        logging.AddConsole();
+        logging.SetMinimumLevel(LogLevel.Warning);
+    });
+//add logging configuration to the service to be injected in a grain on a silo
+builder.Services.AddSingleton<ILogger>(sp =>
+{
+    var logger = sp.GetService<ILogger<Program>>();
+    return logger;
+});
 
 var app = builder.Build();
 app.UseSwagger().UseSwaggerUI(c =>
@@ -61,7 +92,7 @@ app.UseSwagger().UseSwaggerUI(c =>
  });
 
 var logger = app.Logger;
-app.MapGet("/", () => "I am Deployer App!");
+app.MapGet("/", () => "Hello World!");
 
 app.MapGet("/all-running-runs", async () =>
 {
@@ -69,8 +100,8 @@ app.MapGet("/all-running-runs", async () =>
     var client = new GitHubActions.Gates.Framework.Clients.GitHubAppClient(installationId, logger, config);
     var octo = await client.GetOCtokit();
     var runs = await octo.Actions.Workflows.Runs.List("totosan", "GitHubIntegrationDWX");
-    var active = runs.WorkflowRuns.Where(x => x.Status == Octokit.WorkflowRunStatus.InProgress).ToList();
-    return Results.Ok($"{active.Count}");
+    var active = runs.WorkflowRuns.Where(x => x.Status != Octokit.WorkflowRunStatus.Completed).ToList();
+    return Results.Ok(new { RunId = active.Select(x => x.Id), RunName = active.Select(x => x.Name) });
 });
 
 // Start a run of a workflow (SimpleWF) with octokit
@@ -81,7 +112,7 @@ app.MapPost("/start-run", async (RunCommand cmd) =>
     var octo = await client.GetOCtokit();
 
     string yamlFile = "betterCICD.yml";
-    if(cmd.IsTerminator)
+    if (cmd.IsTerminator)
     {
         yamlFile = "ringbasedCICD.yml";
     }
@@ -90,16 +121,50 @@ app.MapPost("/start-run", async (RunCommand cmd) =>
     return Results.Ok();
 });
 
+//approve a run
+app.MapPost("/approve-run", async (IGrainFactory grainFactory, long RunId) =>
+{
+    var run = grainFactory.GetGrain<IRunGrain>(RunId);
+    await run.ApproveRun();
+    return Results.Accepted();
+});
+//reject a run
+app.MapPost("/reject-run", async (IGrainFactory grainFactory, long RunId) =>
+{
+    var run = grainFactory.GetGrain<IRunGrain>(RunId);
+    await run.RejectRun();
+    return Results.Accepted();
+});
+//cancel a run
+app.MapPost("/cancel-run", async (IGrainFactory grainFactory, long RunId) =>
+{
+    var run = grainFactory.GetGrain<IRunGrain>(RunId);
+    await run.CancelRun();
+    return Results.Accepted();
+});
+
 // Started Workflow
-app.MapPost("/payload", async (HttpContext context) =>
+app.MapPost("/payload", async (HttpContext context, IGrainFactory grainFactory) =>
 {
     using var reader = new StreamReader(context.Request.Body);
-    var body = await reader.ReadToEndAsync();
-    logger.LogInformation(body);
+    var bodyString = await reader.ReadToEndAsync();
+    reader.Close();
 
-    var payload = await context.Request.ReadFromJsonAsync<DeploymentProtectionRuleWebHook>();
-
-    return Results.Ok(payload);
+    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+    var payload = JsonSerializer.Deserialize<GitHubRunCallback>(bodyString, options);
+    
+    //if already a grain with the run id, just update the grain
+    if (await grainFactory.GetGrain<IRunGrain>(payload.workflow_run.id).GetStatus() != null)
+    {
+        var current = grainFactory.GetGrain<IRunGrain>(payload.workflow_run.id);
+        await current.SetRun(bodyString);
+        return Results.Ok(payload.deployment_status.state);
+    }
+    logger.LogInformation($"This is Run {payload.workflow_run.id} payload");
+    
+    var run = grainFactory.GetGrain<IRunGrain>(payload.workflow_run.id);
+    await run.SetRun(bodyString);
+    return Results.Accepted();
 });
 
 app.Run();
