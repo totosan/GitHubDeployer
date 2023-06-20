@@ -6,6 +6,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Orleans.Server" Version="7.1.2" />
+    <PackageReference Include="Microsoft.Orleans.clustering.azurestorage" Version="7.1.2" />
+    <PackageReference Include="Microsoft.Orleans.Persistence.AzureStorage" Version="7.1.2" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -25,4 +25,8 @@ if (builder.Environment.IsDevelopment())
 }
 var app = builder.Build();
 app.MapGet("/", () => "I am Deployer Silo!");
+app.MapPost("/payload", (HttpContext context) =>
+{
+    
+});
 app.Run();

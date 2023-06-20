@@ -19,13 +19,6 @@ public class DeployerGrain : IGrain, IDeployerGrain
 
     public Task<object> StartWorkflow(Workflow workflow)
     {
-        if (workflow.isTerminator)
-        {
-            return Task.FromResult<object>(new TerminatorGrain());
-        }
-        else
-        {
-            return Task.FromResult<object>(new DeployerGrain());
-        }
+       return Task.FromResult<object>(null);
     }
 }
