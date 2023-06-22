@@ -7,6 +7,7 @@
 */
 
 using Orleans.Configuration;
+using Orleans.Hosting;
 using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +20,7 @@ if (builder.Environment.IsDevelopment())
     {
         server.UseLocalhostClustering();
         server.AddMemoryGrainStorage("wfStore");
+        server.UseInMemoryReminderService();
     });
 
     // add appsettings to config
@@ -37,7 +39,8 @@ else
        var connectionString = envCnn ?? throw new InvalidOperationException("Missing connection string");
        builder.UseAzureStorageClustering(options =>
            options.ConfigureTableServiceClient(connectionString))
-           .AddAzureTableGrainStorage("wfStore", options => options.ConfigureTableServiceClient(connectionString));
+           .AddAzureTableGrainStorage("wfStore", options => options.ConfigureTableServiceClient(connectionString))
+           .UseAzureTableReminderService(options => options.ConfigureTableServiceClient(connectionString));
        builder.Configure<SiloOptions>(options =>
        {
            options.SiloName = "DeployerSilo";
@@ -143,6 +146,13 @@ app.MapPost("/cancel-run", async (IGrainFactory grainFactory, long RunId) =>
     return Results.Accepted();
 });
 
+app.MapGet("/cancel-reminder", async (IGrainFactory grainFactory, long RunId) =>
+{
+    var run = grainFactory.GetGrain<IRunGrain>(RunId);
+    await run.CancelReminder();
+    return Results.Accepted();
+});
+
 // Started Workflow
 app.MapPost("/payload", async (HttpContext context, IGrainFactory grainFactory) =>
 {
@@ -157,6 +167,7 @@ app.MapPost("/payload", async (HttpContext context, IGrainFactory grainFactory) 
     if (await grainFactory.GetGrain<IRunGrain>(payload.workflow_run.id).GetStatus() != null)
     {
         var current = grainFactory.GetGrain<IRunGrain>(payload.workflow_run.id);
+        var status= current.GetReminderStatus();
         await current.SetRun(bodyString);
         return Results.Ok(payload.deployment_status.state);
     }

@@ -1,4 +1,4 @@
-public interface IRunGrain : Orleans.IGrainWithIntegerKey
+public interface IRunGrain : Orleans.IGrainWithIntegerKey, IRemindable
 {
     /*
     add following methods:
@@ -8,9 +8,11 @@ public interface IRunGrain : Orleans.IGrainWithIntegerKey
     rejectRun
     */
     Task<string> GetStatus();
+    Task CancelReminder();
     Task CancelRun();
     Task ApproveRun();
     Task RejectRun();
-    Task<string> GetApprovalState();
     Task SetRun(string? run);
+    Task<string> GetApprovalState();
+    Task<string> GetReminderStatus();
 }
