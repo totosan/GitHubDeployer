@@ -1,1 +1,0 @@
-az containerapp revision restart -n deployer-app -g MVPSession --revision deployer-app--deploywatcher-latest
