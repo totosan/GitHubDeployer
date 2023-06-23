@@ -11,7 +11,7 @@ az containerapp create -n deployer-app -g $RG \
             --cpu 0.5 --memory 1.0Gi \
             --min-replicas 1 \
             --secrets tokensec=$TOKEN storage=$AZURE_STORAGE_CONNECTION_STRING ghappid=$GHAPP_ID ghapp-whsecret=$GHAPP_WEBHOOKSECRET ghapp-pem="$GHAPP_PEMCERTIFICATE" ghapp-installationid=$GHAPP_INST_ID \
-            --env-vars TOKEN=secretref:tokensec AZURE_STORAGE_CONNECTION_STRING=secretref:storage GHAPP_ID=secretref:ghappid GHAPP_WEBHOOKSECRET=secretref:ghapp-whsecret GHAPP_PEMCERTIFICATE=secretref:ghapp-pem GHAPP_INST_ID=secretref:ghapp-installationid \
+            --env-vars TOKEN=secretref:tokensec AZURE_STORAGE_CONNECTION_STRING=secretref:storage GHAPP_ID=secretref:ghappid GHAPP_WEBHOOKSECRET=secretref:ghapp-whsecret GHAPP_PEMCERTIFICATE=secretref:ghapp-pem GHAPP_INST_ID=secretref:ghapp-installationid GHAPP_TIMEOUT=1 \
             --revision-suffix "deploywatcher-"$tag \
             --ingress external\
             --target-port 8080 

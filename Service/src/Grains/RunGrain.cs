@@ -9,6 +9,7 @@ using Orleans.Reminders;
 public class RunGrain : IGrain, IGrainBase, IRunGrain
 {
     IPersistentState<GitHubRunCallback> _state;
+    private int _timeOut;
     private GitHubAppClient _client;
     private IGrainReminder _reminder;
 
@@ -18,6 +19,7 @@ public class RunGrain : IGrain, IGrainBase, IRunGrain
     {
         _state = state;
         var installationId = Convert.ToInt64(config["GHAPP_INST_ID"]);
+        _timeOut = Convert.ToInt32(config["GHAPP_TIMEOUT"]);
         _client = new GitHubAppClient(installationId, logger, config);
         this.GrainContext = grainContext;
     }
@@ -92,14 +94,14 @@ public class RunGrain : IGrain, IGrainBase, IRunGrain
             var payload = JsonSerializer.Deserialize<GitHubRunCallback>(run);
             _state.State = payload;
             await _state.WriteStateAsync();
-            _reminder = await this.RegisterOrUpdateReminder(this.GetPrimaryKeyString(), TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(1));
+            _reminder = await this.RegisterOrUpdateReminder(this.GetPrimaryKeyString(), TimeSpan.FromMilliseconds(-1), TimeSpan.FromMinutes(_timeOut));
         }
     }
 
     public async Task ReceiveReminder(string reminderName, TickStatus status)
     {
         Console.WriteLine($"Reminder to approve run {status.CurrentTickTime}");
-        //await ApproveRun();
+        await ApproveRun();
     }
 
     //get reminder status
