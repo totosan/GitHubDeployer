@@ -29,12 +29,12 @@ class DeployerService:
             lcd = FakeLCD()
         self.lcd = lcd
         self.listOfRuns = []
-        self.start_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/start"
+        self.start_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/start-run"
         self.simulate_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/simulateError"
-        self.reject_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/reject"
-        self.approve_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/approve"
-        self.cancel_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/cancel"
-        self.blank_run_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io"
+        self.reject_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/reject-run?runid={0}"
+        self.approve_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/approve-run?runid={0}"
+        self.cancel_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/cancel-run?runid={0}"
+        self.blank_run_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/all-running-runs"
 
         # init custom characters
         [self.lcd.create_char(i,DeployerService.CUSTOM_CHARS[i]) for i in range(0,len(DeployerService.CUSTOM_CHARS))]
@@ -91,7 +91,7 @@ class DeployerService:
             wfs = res.json()
             if len(wfs) > 0:
                 # runs found
-                for i in wfs:
+                for i in wfs["runId"]:
                     runid = i
                     if not runid in self.listOfRuns:
                         self.listOfRuns.append(runid)

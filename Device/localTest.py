@@ -8,7 +8,7 @@ import asyncio
 from FakeLCD import FakeLCD
 from deployerService import DeployerService
 from datetime import datetime
-from Device.rotaryEncoder import RotaryEncoder
+from rotaryEncoder import RotaryEncoder
 
         
 fakeLCD = FakeLCD()
@@ -27,17 +27,33 @@ async def main():
         print ("Choose an option:")
         print ("1. Start a new workflow")
         print ("2. Simulate high CPU")
-        print ("3. Exit")
+        print ("3. Approve a workflow")
+        print ("4. Reject a workflow")
+        print ("5. Cancel a workflow")
+        print ("5. Get all running runs")
+        print ("6. Exit")
         # wait for user input
-        choice = input("Enter your choice [1-3]: ")
+        choice = input("Enter your choice [1-6]: ")
         # if user input is 1, start a new workflow
         if choice == '1':
             deployerService.start(isRing=True)
         # if user input is 2, simulate high CPU
         if choice == '2':
             deployerService.simulate(value=100)
-        # if user input is 3, exit the program
+        # if user input is 3, approve a workflow
         if choice == '3':
+            deployerService.approve()
+        # if user input is 4, reject a workflow
+        if choice == '4':
+            deployerService.reject()
+        # if user input is 5, cancel a workflow
+        if choice == '5':
+            deployerService.cancel()
+        # if user input is 6, get all running runs
+        if choice == '6':
+            print(deployerService.getCurrentRun())
+        # if user input is 7, exit the program
+        if choice == '7':
             sys.exit()
         await asyncio.sleep(0.1)
   
