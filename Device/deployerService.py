@@ -34,7 +34,7 @@ class DeployerService:
         self.reject_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/reject-run?runid={0}"
         self.approve_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/approve-run?runid={0}"
         self.cancel_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/cancel-run?runid={0}"
-        self.blank_run_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/all-running-runs"
+        self.blank_run_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/all-running-runs?all=true"
 
         self.rotary = False
         # init custom characters
@@ -113,12 +113,11 @@ class DeployerService:
                 k = 0
                 for i in wfs["runId"]:
                     runid = i
-                    print(f"adding {runid} to list")
+                    state = str(wfs["runStatus"][k])
                     self.listOfRuns.append(runid)
-                    self.log(f"{len(self.listOfRuns)} runs waiting",self.BLUE)
+                    self.log(f"{len(self.listOfRuns)} runs \n{state}",self.BLUE)
                     k = k+1
         if(len(self.listOfRuns)==0):
             self.log("no runs waiting",self.NEUTRAL)
-        print(f"list of runs: {self.listOfRuns}")
 
         return self.listOfRuns
