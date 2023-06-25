@@ -115,7 +115,11 @@ class DeployerService:
                     runid = i
                     state = str(wfs["runStatus"][k])
                     self.listOfRuns.append(runid)
-                    self.log(f"{len(self.listOfRuns)} runs \n{state}",self.BLUE)
+                    if(state == "waiting"): 
+                        color = self.BLUE
+                    else:
+                        color = self.NEUTRAL
+                    self.log(f"{runid} run\n {state}",color)
                     k = k+1
         if(len(self.listOfRuns)==0):
             self.log("no runs waiting",self.NEUTRAL)
