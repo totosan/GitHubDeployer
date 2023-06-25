@@ -98,16 +98,21 @@ app.UseSwagger().UseSwaggerUI(c =>
  });
 
 var logger = app.Logger;
-app.MapGet("/", () => "Hello World!");
 
-app.MapGet("/all-running-runs", async () =>
+app.MapGet("/all-running-runs", async (bool all) =>
 {
     var installationId = Convert.ToInt64(config["GHAPP_INST_ID"]);
     var client = new GitHubActions.Gates.Framework.Clients.GitHubAppClient(installationId, logger, config);
     var octo = await client.GetOCtokit();
     var runs = await octo.Actions.Workflows.Runs.List("totosan", "GitHubIntegrationDWX");
-    var active = runs.WorkflowRuns.Where(x => x.Status == Octokit.WorkflowRunStatus.Pending || x.Status == Octokit.WorkflowRunStatus.Waiting).ToList();
-    return Results.Ok(new { RunId = active.Select(x => x.Id), RunName = active.Select(x => x.Name), RunStatus = active.Select(x => x.Status) });
+    List<Octokit.WorkflowRun> active = null;
+    if(all)
+    {
+        active = runs.WorkflowRuns.Where(x=>x.Status != Octokit.WorkflowRunStatus.Completed).ToList();
+        return Results.Ok(new { RunId = active.Select(x => x.Id), RunName = active.Select(x => x.Name), RunStatus = active.Select(x => x.Status.StringValue) });
+    }
+    active = runs.WorkflowRuns.Where(x => x.Status == Octokit.WorkflowRunStatus.Pending || x.Status == Octokit.WorkflowRunStatus.Waiting).ToList();
+    return Results.Ok(new { RunId = active.Select(x => x.Id), RunName = active.Select(x => x.Name), RunStatus = active.Select(x => x.Status.StringValue) });
 });
 
 // Start a run of a workflow (SimpleWF) with octokit
