@@ -52,8 +52,8 @@ async def timeout_callback():
         lst = dpSvc.getCurrentRun()
         if isTerminator:
             lcd.setRGB(dpSvc.YELLOW.R, dpSvc.YELLOW.G, dpSvc.YELLOW.B)
-    except Exception as e:
-        print(e)
+    finally:
+        pass
         
 def valueChanged(value, direction):
     print(f"value of rotary: {value}")
@@ -146,3 +146,4 @@ if __name__ == "__main__":
         loop.run_forever()
     finally:
         exit_handler()
+        print(f"Exited handler")
