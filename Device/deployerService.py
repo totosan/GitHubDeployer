@@ -30,7 +30,7 @@ class DeployerService:
         self.lcd = lcd
         self.listOfRuns = []
         self.start_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/start-run"
-        self.simulate_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/simulateError"
+        self.simulate_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/simulate"
         self.reject_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/reject-run?runid={0}"
         self.approve_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/approve-run?runid={0}"
         self.cancel_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/cancel-run?runid={0}"
@@ -70,13 +70,15 @@ class DeployerService:
             self.log("NOT started", self.YELLOW)
 
     def simulate(self, value):
-        body = {'CPU': value}
-        res = requests.post(url=self.simulate_url, json=body)
-        if res.ok:
-            print(res.content)
-            #print("High CPU")
-            self.log("High CPU", self.RED)
-            #self.cancel()
+        for i in self.listOfRuns:
+            body = {'RunId':i,'Command':"CPU",'Value': value}
+            print(f'{body}')
+            res = requests.post(url=self.simulate_url, json=body)
+            if res.ok:
+                print(res.content)
+                #print("High CPU")
+                self.log("High CPU", self.RED)
+                #self.cancel()
             
     def reject(self):
         for i in self.listOfRuns:
