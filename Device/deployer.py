@@ -52,18 +52,13 @@ async def timeout_callback():
         lst = dpSvc.getCurrentRun()
         if isTerminator:
             lcd.setRGB(dpSvc.YELLOW.R, dpSvc.YELLOW.G, dpSvc.YELLOW.B)
-    finally:
-        pass
+    except Exception as ex:
+        print(f"exception in timeout_callback : {ex}")
         
 def valueChanged(value, direction):
-    print(f"value of rotary: {value}")
-    # display a progress as # symbol that has a full length of 16 chars
-    # where a value of 50 is 16th char
-    # so each step is 50/16 = 3.125
-    lcd.setText_norefresh(f"{'#' * int(value/3.125)}")
-    if(value >= 50):
-        dpSvc.simulate(value)
-        e1.resetValue()
+    fired = dpSvc.simulate(value)
+#    if(fired):
+#        e1.resetValue()
 
 
 def setup_hardware():
@@ -88,14 +83,14 @@ def button_pushed(_):
         if GPIO.input(CANCEL_BTN) == GPIO.HIGH:
             print("Cancel")
             if(isTerminator):
-                loop.call_soon_threadsafe(dpSvc.cancel())
+                loop.call_soon_threadsafe(dpSvc.cancel)
             else:
-                loop.call_soon_threadsafe(dpSvc.reject())
+                loop.call_soon_threadsafe(dpSvc.reject)
             return
                 
         if GPIO.input(APPROVE_BTN) == GPIO.HIGH:
             print("Approve")
-            loop.call_soon_threadsafe(dpSvc.approve())
+            loop.call_soon_threadsafe(dpSvc.approve)
             return
 
         if GPIO.input(START_BTN) == GPIO.HIGH:
