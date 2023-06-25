@@ -1,4 +1,4 @@
-import requests, os
+import requests, os, json
 from FakeLCD import FakeLCD
 
 class Color:
@@ -36,10 +36,12 @@ class DeployerService:
         self.cancel_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/cancel-run?runid={0}"
         self.blank_run_url = "https://deployer-app.whitebeach-e0296232.westeurope.azurecontainerapps.io/all-running-runs"
 
+        self.rotary = False
         # init custom characters
         [self.lcd.create_char(i,DeployerService.CUSTOM_CHARS[i]) for i in range(0,len(DeployerService.CUSTOM_CHARS))]
         
     def log(self, text, color):
+        print(text)
         self.lcd.setText_norefresh(f'{text}')
         R,G,B=color.Get()
         self.lcd.setRGB(R,G,B)
@@ -50,7 +52,8 @@ class DeployerService:
             if(res.ok):
                 self.log("canceling...",self.RED)
                 self.listOfRuns.remove(i)
-    
+            print(res.content)
+            
     def approve(self):
         for i in self.listOfRuns:
             res = requests.post(self.approve_url.format(i))
@@ -70,40 +73,52 @@ class DeployerService:
             self.log("NOT started", self.YELLOW)
 
     def simulate(self, value):
-        for i in self.listOfRuns:
-            body = {'RunId':i,'Command':"CPU",'Value': value}
-            print(f'{body}')
-            res = requests.post(url=self.simulate_url, json=body)
-            if res.ok:
-                print(res.content)
-                #print("High CPU")
-                self.log("High CPU", self.RED)
-                #self.cancel()
-            
+        self.rotary = True
+        print(f"value of rotary: {value}")
+        # display a progress as # symbol that has a full length of 16 chars
+        # where a value of 50 is 16th char
+        # so each step is 50/16 = 3.125        
+        self.log(f"{'#' * int(value/3.125)}",self.NEUTRAL)
+        if(value >= 50):
+            try:
+                for i in self.listOfRuns:
+                    body = {'RunId':i,'Command':"CPU",'Value': value}
+                    print(f'{body}')
+                    res = requests.post(url=self.simulate_url, json=body)
+                    if res.ok:
+                        self.log("High CPU", self.RED)
+            except Exception as ex:
+                print(ex)
+            self.rotary = False
+            return True
+        self.rotary = False
+        return False
+                        
     def reject(self):
         for i in self.listOfRuns:
             res = requests.post(self.reject_url.format(i))
             if(res.ok):
                 self.log("Rejected...",self.RED)
                 self.listOfRuns.remove(i)
-                
+            
     def getCurrentRun(self):
+        if(self.rotary):
+            return 
         res = requests.get(url=self.blank_run_url)
         if(res.ok):
             wfs = res.json()
             if len(wfs) > 0:
                 # runs found
+                self.listOfRuns.clear()
+                k = 0
                 for i in wfs["runId"]:
                     runid = i
-                    if not runid in self.listOfRuns:
-                        self.listOfRuns.append(runid)
-                        print(runid)
-                        self.log(f"{runid} is waiting",self.BLUE)
-                        
-            elif(len(self.listOfRuns)>0):
-                self.listOfRuns.clear()
-                print("cleared list")
-                self.log("cleared",self.RED)
+                    print(f"adding {runid} to list")
+                    self.listOfRuns.append(runid)
+                    self.log(f"{len(self.listOfRuns)} runs waiting",self.BLUE)
+                    k = k+1
         if(len(self.listOfRuns)==0):
             self.log("no runs waiting",self.NEUTRAL)
+        print(f"list of runs: {self.listOfRuns}")
+
         return self.listOfRuns
