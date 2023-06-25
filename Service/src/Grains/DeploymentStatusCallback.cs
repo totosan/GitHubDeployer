@@ -1,4 +1,6 @@
-// GitHubRunCallback myDeserializedClass = JsonConvert.DeserializeObject<GitHubRunCallback>(myJsonResponse);
+using Deployer.Callbacks.Abstractions;
+
+namespace Deployer.Callbacks.CustomProtection;
     [GenerateSerializer]
     public class Actor
     {
@@ -224,7 +226,7 @@
         public string default_branch { get; set; }
     }
     [GenerateSerializer]
-    public class GitHubRunCallback
+    public class DeploymentStatusCallback
     {
         public DeploymentStatus deployment_status { get; set; }
         public Deployment deployment { get; set; }
@@ -299,7 +301,7 @@
     }
 
     [GenerateSerializer]
-    public class WorkflowRun
+    public class WorkflowRun:IWorkflowRun
     {
         public long id { get; set; }
         public string name { get; set; }

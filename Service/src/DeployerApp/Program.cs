@@ -6,9 +6,12 @@
     - Reject a run
 */
 
+using Deployer.Callbacks.Abstractions;
+using Deployer.Callbacks.CustomProtection;
 using Orleans.Configuration;
 using Orleans.Hosting;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 var builder = WebApplication.CreateBuilder(args);
 IConfiguration config = null;
@@ -103,8 +106,8 @@ app.MapGet("/all-running-runs", async () =>
     var client = new GitHubActions.Gates.Framework.Clients.GitHubAppClient(installationId, logger, config);
     var octo = await client.GetOCtokit();
     var runs = await octo.Actions.Workflows.Runs.List("totosan", "GitHubIntegrationDWX");
-    var active = runs.WorkflowRuns.Where(x => x.Status != Octokit.WorkflowRunStatus.Completed).ToList();
-    return Results.Ok(new { RunId = active.Select(x => x.Id), RunName = active.Select(x => x.Name) });
+    var active = runs.WorkflowRuns.Where(x => x.Status == Octokit.WorkflowRunStatus.Pending || x.Status == Octokit.WorkflowRunStatus.Waiting).ToList();
+    return Results.Ok(new { RunId = active.Select(x => x.Id), RunName = active.Select(x => x.Name), RunStatus = active.Select(x => x.Status) });
 });
 
 // Start a run of a workflow (SimpleWF) with octokit
@@ -128,16 +131,17 @@ app.MapPost("/start-run", async (RunCommand cmd) =>
 app.MapPost("/approve-run", async (IGrainFactory grainFactory, long RunId) =>
 {
     var run = grainFactory.GetGrain<IRunGrain>(RunId);
-    await run.ApproveRun();
+    await run.SendApprovalDecisionAsync("approved", "Approved by the user");
     return Results.Accepted();
 });
 //reject a run
 app.MapPost("/reject-run", async (IGrainFactory grainFactory, long RunId) =>
 {
     var run = grainFactory.GetGrain<IRunGrain>(RunId);
-    await run.RejectRun();
+    await run.SendApprovalDecisionAsync("rejected", "Rejected by the user");
     return Results.Accepted();
 });
+
 //cancel a run
 app.MapPost("/cancel-run", async (IGrainFactory grainFactory, long RunId) =>
 {
@@ -156,23 +160,44 @@ app.MapGet("/cancel-reminder", async (IGrainFactory grainFactory, long RunId) =>
 // Started Workflow
 app.MapPost("/payload", async (HttpContext context, IGrainFactory grainFactory) =>
 {
+
     using var reader = new StreamReader(context.Request.Body);
     var bodyString = await reader.ReadToEndAsync();
     reader.Close();
 
-    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-    var payload = JsonSerializer.Deserialize<GitHubRunCallback>(bodyString, options);
-    
+    Console.WriteLine("1####################");
+    Console.WriteLine(bodyString);
+    Console.WriteLine("2####################");
+
+    DeploymentStatusCallback payload = null;
+    try
+    {
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var json = JsonObject.Parse(bodyString);
+        var action = json["action"];
+        if (action != null && action.ToString() == "created" && json["deployment_status"] != null)
+        {
+            payload = JsonSerializer.Deserialize<DeploymentStatusCallback>(bodyString, options);
+        }
+        else
+        {
+            return Results.Accepted();
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine(ex.Message);
+        return Results.Accepted();
+    }
     //if already a grain with the run id, just update the grain
     if (await grainFactory.GetGrain<IRunGrain>(payload.workflow_run.id).GetStatus() != null)
     {
         var current = grainFactory.GetGrain<IRunGrain>(payload.workflow_run.id);
-        var status= current.GetReminderStatus();
         await current.SetRun(bodyString);
-        return Results.Ok(payload.deployment_status.state);
+        return Results.Ok(payload.workflow_run.status);
     }
     logger.LogInformation($"This is Run {payload.workflow_run.id} payload");
-    
+
     var run = grainFactory.GetGrain<IRunGrain>(payload.workflow_run.id);
     await run.SetRun(bodyString);
     return Results.Accepted();
