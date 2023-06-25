@@ -70,7 +70,7 @@ public class RunGrain : IGrain, IGrainBase, IRunGrain
     }
     public async Task RejectRun(string comment)
     {
-        await ReviewDeployment(Octokit.PendingDeploymentReviewState.Rejected, "Rejected by machine");
+        await ReviewDeployment(Octokit.PendingDeploymentReviewState.Rejected, comment);
     }
 
     public async Task CancelRun()

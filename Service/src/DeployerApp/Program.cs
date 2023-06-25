@@ -142,6 +142,10 @@ app.MapPost("/simulate", async (IGrainFactory grainFactory, SimulationCommand cm
 app.MapPost("/approve-run", async (IGrainFactory grainFactory, long RunId) =>
 {
     var run = grainFactory.GetGrain<IRunGrain>(RunId);
+    if (run.GetStatus() == null)
+    {
+        return Results.BadRequest("Run not found");
+    }
     await run.SendApprovalDecisionAsync("approved", "Approved by the user");
     return Results.Accepted();
 });
@@ -149,6 +153,10 @@ app.MapPost("/approve-run", async (IGrainFactory grainFactory, long RunId) =>
 app.MapPost("/reject-run", async (IGrainFactory grainFactory, long RunId) =>
 {
     var run = grainFactory.GetGrain<IRunGrain>(RunId);
+    if (run.GetStatus() == null)
+    {
+        return Results.BadRequest("Run not found");
+    }
     await run.SendApprovalDecisionAsync("rejected", "Rejected by the user");
     return Results.Accepted();
 });
@@ -157,6 +165,10 @@ app.MapPost("/reject-run", async (IGrainFactory grainFactory, long RunId) =>
 app.MapPost("/cancel-run", async (IGrainFactory grainFactory, long RunId) =>
 {
     var run = grainFactory.GetGrain<IRunGrain>(RunId);
+    if (run.GetStatus() == null)
+    {
+        return Results.BadRequest("Run not found");
+    }
     await run.CancelRun();
     return Results.Accepted();
 });
@@ -164,6 +176,10 @@ app.MapPost("/cancel-run", async (IGrainFactory grainFactory, long RunId) =>
 app.MapGet("/cancel-reminder", async (IGrainFactory grainFactory, long RunId) =>
 {
     var run = grainFactory.GetGrain<IRunGrain>(RunId);
+    if (run.GetStatus() == null)
+    {
+        return Results.BadRequest("Run not found");
+    }
     await run.CancelReminder();
     return Results.Accepted();
 });
