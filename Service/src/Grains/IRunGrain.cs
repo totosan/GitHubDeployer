@@ -14,5 +14,5 @@ public interface IRunGrain : Orleans.IGrainWithIntegerKey, IRemindable
     Task RejectRun();
     Task SetRun(string? run);
     Task<string> GetApprovalState();
-    Task<string> GetReminderStatus();
+    Task SendApprovalDecisionAsync(string state, string comment);
 }

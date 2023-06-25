@@ -30,13 +30,13 @@ async def main():
         print ("3. Approve a workflow")
         print ("4. Reject a workflow")
         print ("5. Cancel a workflow")
-        print ("5. Get all running runs")
-        print ("6. Exit")
+        print ("6. Get all running runs")
+        print ("7. Exit")
         # wait for user input
-        choice = input("Enter your choice [1-6]: ")
+        choice = input("Enter your choice [1-7]: ")
         # if user input is 1, start a new workflow
         if choice == '1':
-            deployerService.start(isRing=True)
+            deployerService.start(isRing=False)
         # if user input is 2, simulate high CPU
         if choice == '2':
             deployerService.simulate(value=100)
