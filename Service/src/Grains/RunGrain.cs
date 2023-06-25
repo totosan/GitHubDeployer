@@ -48,7 +48,7 @@ public class RunGrain : IGrain, IGrainBase, IRunGrain
         var run = await octo.Actions.Workflows.Runs.Get(_state.State.repository?.owner?.login, _state.State.repository?.name, _state.State.workflow_run.id);
         if (run != null)
         {
-            _state.State.deployment_status.state = run.Status.ToString();
+            _state.State.workflow_run.status = run.Status.ToString();
             return run.Status.ToString();
         }
         else
@@ -60,14 +60,29 @@ public class RunGrain : IGrain, IGrainBase, IRunGrain
     public async Task ApproveRun()
     {
         await this.GetApprovalState();
-        Console.WriteLine($"Try to approve run. Current runs state is {_state.State.deployment_status.state}");
-        await ReviewDeployment(Octokit.PendingDeploymentReviewState.Approved, "Approved");
+        Console.WriteLine($"Try to approve run. Current runs state is {_state.State.workflow_run.status}");
+        await ReviewDeployment(Octokit.PendingDeploymentReviewState.Approved, "Approved by machine");
     }
 
     public async Task RejectRun()
     {
-        await ReviewDeployment(Octokit.PendingDeploymentReviewState.Rejected, "Rejected");
+        await RejectRun("Rejected by machine");
     }
+    public async Task RejectRun(string comment)
+    {
+        await ReviewDeployment(Octokit.PendingDeploymentReviewState.Rejected, "Rejected by machine");
+    }
+
+    public async Task CancelRun()
+    {
+        var octo = await _client.GetOCtokit();
+        await octo.Actions.Workflows.Runs.Cancel(_state.State.repository.owner.login, _state.State.repository.name, _state.State.workflow_run.id);
+        await this.UnregisterReminder(_reminder);
+        _state.State = null;
+        await _state.WriteStateAsync();
+        return;
+    }
+
 
     /// <summary>
     /// Reviews the deployment with the specified state and comment.
@@ -100,7 +115,7 @@ public class RunGrain : IGrain, IGrainBase, IRunGrain
                 if (approvalResponse == System.Net.HttpStatusCode.OK)
                 {
                     _logger.LogInformation($"Successfully set approval decision to {state} for environment {environmentName}");
-                    _state.State.deployment_status.state = "rejected";
+                    _state.State.workflow_run.status = "rejected";
                     await _state.WriteStateAsync();
                 }
             }
@@ -150,20 +165,15 @@ public class RunGrain : IGrain, IGrainBase, IRunGrain
         }
     }
 
-    public async Task CancelRun()
-    {
-        var octo = await _client.GetOCtokit();
-        await octo.Actions.Workflows.Runs.Cancel(_state.State.repository.owner.login, _state.State.repository.name, _state.State.workflow_run.id);
-        await this.UnregisterReminder(_reminder);
-        _state.State = null;
-        await _state.WriteStateAsync();
-        return;
-    }
 
+    public async Task SimulateUnhealthy(string comment)
+    {
+        await this.RejectRun(comment); 
+    }
 
     public Task<string> GetStatus()
     {
-        var stateOfRun = _state.State.deployment_status?.state;
+        var stateOfRun = _state.State.workflow_run?.status;
         return Task.FromResult(stateOfRun);
     }
 
@@ -210,4 +220,5 @@ public class RunGrain : IGrain, IGrainBase, IRunGrain
         _state.State = null;
         await _state.ClearStateAsync();
     }
+
 }

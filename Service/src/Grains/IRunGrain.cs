@@ -15,4 +15,5 @@ public interface IRunGrain : Orleans.IGrainWithIntegerKey, IRemindable
     Task SetRun(string? run);
     Task<string> GetApprovalState();
     Task SendApprovalDecisionAsync(string state, string comment);
+    Task SimulateUnhealthy(string comment);
 }

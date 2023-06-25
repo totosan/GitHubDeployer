@@ -127,6 +127,17 @@ app.MapPost("/start-run", async (RunCommand cmd) =>
     return Results.Ok();
 });
 
+app.MapPost("/simulate", async (IGrainFactory grainFactory, SimulationCommand cmd) =>
+{
+    var run = grainFactory.GetGrain<IRunGrain>(cmd.RunId);
+    if (run.GetStatus() != null)
+    {
+        await run.SimulateUnhealthy($"{cmd.Value} from {cmd.Command}");
+        return Results.Accepted();
+    }
+    return Results.BadRequest("Run not found");
+});
+
 //approve a run
 app.MapPost("/approve-run", async (IGrainFactory grainFactory, long RunId) =>
 {
